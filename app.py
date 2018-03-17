@@ -41,27 +41,26 @@ def findMaxMin(matrix):
 def findNormalizedValues(inputValues):
     #inputValues = inputValues.set_index('Date')
     print(inputValues)
-    minMaxValues = findMaxMin(data_frame)
+    minMaxValues = findMaxMin(test)
     print(minMaxValues[0])
     print(minMaxValues[1])
     return (inputValues - minMaxValues[1])/(minMaxValues[0] - minMaxValues[1])
 
-from flask import request , Flask
+def findInverseTransform(value):
+    return inverse_feature_scaling(test , value)
+
+from flask import request , Flask , json
 
 app = Flask(__name__)
-@app.route('/predict', methods=['POST'])
+@app.route('/', methods=['POST' , 'OPTIONS'])
 def predict():
     print('loading model')
     model = load_model('./model_1L_5N_20180125.h5')
+    #print(request.json())
     data = [float(request.form['data1']),float(request.form['data2']),float(request.form['data3']),float(request.form['data4']), float(request.form['data5'])]
-    print(type(data))
-    print(type(data[0]))
     print(findNormalizedValues(data))
     X_test = findNormalizedValues(data)
     y_pred = model.predict(np.asarray([X_test]))
     print(y_pred)
-    return '''
-        <form method="post">
-            <H1> y_pred </H1>
-        </form>
-    '''
+    #return flask.jsonify(result=findInverseTransform(y_pred)[0][0])
+    return '{}'.format(findInverseTransform(y_pred)[0][0])
